@@ -1,58 +1,1285 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Celestial Map — Prototype</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>The Celestial Archive</title>
+
 <style>
-:root{--bg:#070d1d;--panel:#0c1530;--gold:#d7b76a;--text:#eef2ff;--muted:#9ca9c9;--line:#29385f}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 35%,#17274d 0,#0a1229 42%,#040812 100%);color:var(--text);font-family:Georgia,serif;min-height:100vh;overflow:hidden}
-header{position:absolute;z-index:5;top:24px;left:0;right:0;text-align:center;pointer-events:none}
-.kicker{font:11px Arial,sans-serif;letter-spacing:4px;color:var(--gold);text-transform:uppercase}.title{font-size:31px;letter-spacing:2px;margin:5px 0}.sub{font:12px Arial,sans-serif;color:var(--muted);letter-spacing:1px}
-#sky{position:absolute;inset:0}
-.star{position:absolute;border-radius:50%;background:#fff;box-shadow:0 0 8px 2px rgba(210,225,255,.65);cursor:pointer;transition:.25s;z-index:2}
-.star:hover,.star.active{transform:scale(2.2);box-shadow:0 0 18px 5px rgba(215,183,106,.7)}
-.star.gold{background:#e9cf88;box-shadow:0 0 10px 3px rgba(215,183,106,.7)}
-.constellation{position:absolute;inset:0;pointer-events:none;opacity:.28}
-.constellation svg{width:100%;height:100%}.constellation line{stroke:#6f83b5;stroke-width:.8}
-.panel{position:absolute;z-index:10;right:28px;bottom:28px;width:300px;padding:22px;background:rgba(7,13,29,.9);border:1px solid #35456f;border-radius:12px;box-shadow:0 18px 60px #0008;backdrop-filter:blur(10px);display:none}
-.panel.show{display:block}.rank{font:10px Arial,sans-serif;letter-spacing:2px;color:var(--gold);text-transform:uppercase}.name{font-size:25px;margin:7px 0}.date{font:11px Arial,sans-serif;color:var(--muted)}.desc{font:13px/1.6 Arial,sans-serif;color:#d6def4;margin:15px 0}.close{position:absolute;right:14px;top:10px;color:var(--muted);cursor:pointer;font:18px Arial}
-.legend{position:absolute;z-index:5;left:28px;bottom:28px;font:10px Arial,sans-serif;color:var(--muted);letter-spacing:1px;line-height:2}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 7px #fff;margin-right:7px}.dot.g{background:var(--gold);box-shadow:0 0 7px var(--gold)}
-.instruction{position:absolute;z-index:5;bottom:29px;left:50%;transform:translateX(-50%);font:10px Arial,sans-serif;color:#7482a5;letter-spacing:1px}
-@media(max-width:600px){.title{font-size:23px}.panel{left:18px;right:18px;bottom:18px;width:auto}.legend{left:18px;bottom:18px}.instruction{display:none}}
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: #070914;
+    color: #eeeaff;
+    font-family: Georgia, "Times New Roman", serif;
+    overflow-x: hidden;
+}
+
+/* =========================
+   BACKGROUND
+========================= */
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.5;
+
+    background-image:
+        radial-gradient(circle, white 0 1px, transparent 1.5px);
+
+    background-size: 90px 90px;
+}
+
+/* =========================
+   MAIN
+========================= */
+
+.archive {
+    min-height: 100vh;
+    padding: 40px 30px 50px;
+
+    background:
+        radial-gradient(
+            circle at center,
+            rgba(93, 82, 155, 0.18),
+            transparent 45%
+        ),
+        #070914;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+header {
+    text-align: center;
+}
+
+.kicker {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    opacity: 0.5;
+}
+
+h1 {
+    margin: 12px 0 5px;
+
+    font-size: clamp(35px, 6vw, 65px);
+    font-weight: normal;
+    letter-spacing: 8px;
+}
+
+.subtitle {
+    font-size: 15px;
+    font-style: italic;
+    opacity: 0.6;
+}
+
+/* =========================
+   CYCLE NAVIGATION
+========================= */
+
+.cycle-navigation {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+
+    margin: 35px auto 20px;
+}
+
+.nav-button {
+    width: 40px;
+    height: 40px;
+
+    border-radius: 50%;
+    border: 1px solid rgba(255,255,255,0.2);
+
+    background: rgba(255,255,255,0.04);
+    color: white;
+
+    cursor: pointer;
+    font-size: 20px;
+}
+
+.nav-button:hover {
+    background: rgba(255,255,255,0.12);
+}
+
+.cycle-title {
+    min-width: 250px;
+    text-align: center;
+}
+
+.cycle-title strong {
+    display: block;
+
+    font-size: 20px;
+    font-weight: normal;
+    letter-spacing: 4px;
+}
+
+.cycle-title span {
+    display: block;
+
+    margin-top: 6px;
+
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+
+    opacity: 0.45;
+    text-transform: uppercase;
+}
+
+/* =========================
+   CONSTELLATION MAP
+========================= */
+
+.map-container {
+    width: min(1100px, 95vw);
+    height: 620px;
+
+    margin: auto;
+
+    position: relative;
+}
+
+.map {
+    position: absolute;
+    inset: 0;
+
+    border: 1px solid rgba(255,255,255,0.08);
+
+    border-radius: 50%;
+
+    background:
+        radial-gradient(
+            ellipse at center,
+            rgba(100,90,160,0.1),
+            transparent 60%
+        );
+}
+
+/* Decorative orbital rings */
+
+.map::before {
+    content: "";
+
+    position: absolute;
+    inset: 8%;
+
+    border: 1px solid rgba(255,255,255,0.04);
+
+    border-radius: 50%;
+
+    transform: rotate(18deg);
+}
+
+.map::after {
+    content: "";
+
+    position: absolute;
+    inset: 18%;
+
+    border: 1px solid rgba(255,255,255,0.035);
+
+    border-radius: 50%;
+
+    transform: rotate(-25deg);
+}
+
+/* =========================
+   MONTH LABELS
+========================= */
+
+.month {
+    position: absolute;
+
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 3px;
+
+    opacity: 0.4;
+    text-transform: uppercase;
+}
+
+.june {
+    left: 10%;
+    top: 18%;
+}
+
+.july {
+    left: 35%;
+    top: 7%;
+}
+
+.august {
+    right: 10%;
+    top: 19%;
+}
+
+.september {
+    right: 7%;
+    bottom: 20%;
+}
+
+.october {
+    left: 37%;
+    bottom: 7%;
+}
+
+.november {
+    left: 9%;
+    bottom: 20%;
+}
+
+/* =========================
+   SVG CONSTELLATION
+========================= */
+
+svg {
+    position: absolute;
+
+    width: 100%;
+    height: 100%;
+
+    inset: 0;
+}
+
+.constellation-line {
+    stroke: rgba(220,215,255,0.25);
+    stroke-width: 1;
+
+    stroke-dasharray: 2 7;
+}
+
+/* =========================
+   STARS
+========================= */
+
+.star {
+    cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        filter 0.2s ease;
+}
+
+.star:hover {
+    filter:
+        drop-shadow(0 0 8px currentColor)
+        drop-shadow(0 0 18px currentColor);
+
+    transform: scale(1.5);
+}
+
+/* =========================
+   LEGEND
+========================= */
+
+.legend {
+    display: flex;
+
+    justify-content: center;
+    align-items: center;
+
+    gap: 45px;
+
+    margin-top: 10px;
+
+    flex-wrap: wrap;
+
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+
+    letter-spacing: 1px;
+
+    opacity: 0.7;
+}
+
+.legend-stars span {
+    margin-right: 7px;
+
+    font-size: 17px;
+}
+
+/* Temperature */
+
+.temperature {
+    display: flex;
+}
+
+.temperature span {
+    padding: 4px 7px;
+
+    border: 1px solid rgba(255,255,255,0.08);
+}
+
+.O { color: #a9caff; }
+.B { color: #b9dcff; }
+.A { color: #e9f2ff; }
+.F { color: #fff0c0; }
+.G { color: #ffe08b; }
+.K { color: #ffae6c; }
+.M { color: #ff7560; }
+
+/* =========================
+   MODAL
+========================= */
+
+.modal {
+    position: fixed;
+
+    inset: 0;
+
+    display: none;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 20px;
+
+    background: rgba(3,4,10,0.82);
+
+    backdrop-filter: blur(8px);
+
+    z-index: 100;
+}
+
+.modal.active {
+    display: flex;
+}
+
+/* =========================
+   PROFILE CARD
+========================= */
+
+.profile {
+    width: min(760px, 95vw);
+
+    display: grid;
+
+    grid-template-columns: 250px 1fr;
+
+    position: relative;
+
+    background:
+        linear-gradient(
+            135deg,
+            #121426,
+            #090b15
+        );
+
+    border: 1px solid rgba(255,255,255,0.15);
+
+    box-shadow:
+        0 30px 100px rgba(0,0,0,0.6);
+}
+
+/* =========================
+   PORTRAIT
+========================= */
+
+.portrait {
+    min-height: 330px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(120,110,190,0.2),
+            transparent 60%
+        ),
+        #101321;
+
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+
+    letter-spacing: 2px;
+
+    color: rgba(255,255,255,0.35);
+}
+
+/*
+   Nanti bagian ini bisa diganti
+   dengan foto murid.
+*/
+
+/* =========================
+   PROFILE CONTENT
+========================= */
+
+.profile-content {
+    padding: 45px;
+}
+
+.close {
+    position: absolute;
+
+    right: 15px;
+    top: 10px;
+
+    border: none;
+    background: none;
+
+    color: white;
+
+    font-size: 25px;
+
+    opacity: 0.6;
+
+    cursor: pointer;
+}
+
+.rank {
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+
+    letter-spacing: 2px;
+
+    opacity: 0.5;
+
+    text-transform: uppercase;
+}
+
+.profile h2 {
+    margin: 10px 0;
+
+    font-size: 32px;
+    font-weight: normal;
+
+    letter-spacing: 3px;
+}
+
+.profile-info {
+    font-family: Arial, sans-serif;
+
+    font-size: 12px;
+
+    line-height: 2;
+
+    opacity: 0.65;
+}
+
+.quote {
+    margin-top: 25px;
+
+    padding-top: 18px;
+
+    border-top: 1px solid rgba(255,255,255,0.08);
+
+    font-style: italic;
+
+    opacity: 0.65;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width: 650px) {
+
+    .archive {
+        padding: 30px 15px;
+    }
+
+    .map-container {
+        height: 500px;
+    }
+
+    .profile {
+        grid-template-columns: 1fr;
+    }
+
+    .portrait {
+        min-height: 190px;
+    }
+
+    .profile-content {
+        padding: 30px;
+    }
+
+    .legend {
+        gap: 20px;
+    }
+}
 </style>
 </head>
+
+
 <body>
-<header><div class="kicker">Celestial Registry</div><div class="title">THE CELESTIAL MAP</div><div class="sub">Every observer leaves a light behind · 2026.2</div></header>
-<div id="sky"></div>
-<div class="constellation"><svg viewBox="0 0 100 100" preserveAspectRatio="none">
-<line x1="13" y1="37" x2="27" y2="29"/><line x1="27" y1="29" x2="42" y2="35"/><line x1="42" y1="35" x2="55" y2="22"/>
-<line x1="55" y1="22" x2="69" y2="31"/><line x1="69" y1="31" x2="82" y2="24"/>
-<line x1="22" y1="67" x2="38" y2="58"/><line x1="38" y1="58" x2="51" y2="70"/><line x1="51" y1="70" x2="68" y2="61"/>
-</svg></div>
-<div class="legend"><span class="dot g"></span> Astral Laureate<br><span class="dot"></span> Distinguished / Notable Observer</div>
-<div class="instruction">CLICK A STAR TO VIEW ITS RECORD</div>
-<div id="panel" class="panel"><span class="close" onclick="closePanel()">×</span><div id="rank" class="rank"></div><div id="name" class="name"></div><div id="date" class="date"></div><div id="desc" class="desc"></div></div>
+
+<div class="archive">
+
+    <!-- HEADER -->
+
+    <header>
+
+        <div class="kicker">
+            Astronomical Student Archive
+        </div>
+
+        <h1>
+            THE CELESTIAL ARCHIVE
+        </h1>
+
+        <div class="subtitle">
+            A record of stars that crossed the classroom sky.
+        </div>
+
+    </header>
+
+
+    <!-- CYCLE -->
+
+    <div class="cycle-navigation">
+
+        <button class="nav-button" id="previous">
+            ‹
+        </button>
+
+        <div class="cycle-title">
+
+            <strong id="cycle-name">
+                CELESTIAL CYCLE I
+            </strong>
+
+            <span id="cycle-date">
+                June — November 2026
+            </span>
+
+        </div>
+
+        <button class="nav-button" id="next">
+            ›
+        </button>
+
+    </div>
+
+
+    <!-- MAP -->
+
+    <div class="map-container">
+
+        <div class="map">
+
+            <!-- MONTHS -->
+
+            <div class="month june">
+                June
+            </div>
+
+            <div class="month july">
+                July
+            </div>
+
+            <div class="month august">
+                August
+            </div>
+
+            <div class="month september">
+                September
+            </div>
+
+            <div class="month october">
+                October
+            </div>
+
+            <div class="month november">
+                November
+            </div>
+
+
+            <!-- CONSTELLATION -->
+
+            <svg
+                id="constellation"
+                viewBox="0 0 1000 600"
+                preserveAspectRatio="none">
+            </svg>
+
+        </div>
+
+    </div>
+
+
+    <!-- LEGEND -->
+
+    <div class="legend">
+
+        <div class="legend-stars">
+
+            <span>⭐</span> Rank I
+
+            <span>✦</span> Rank II
+
+            <span>✧</span> Rank III
+
+            <span>·</span> Recorded
+
+        </div>
+
+
+        <div>
+
+            Stellar Temperature
+
+            <span class="temperature">
+
+                <span class="O">O</span>
+                <span class="B">B</span>
+                <span class="A">A</span>
+                <span class="F">F</span>
+                <span class="G">G</span>
+                <span class="K">K</span>
+                <span class="M">M</span>
+
+            </span>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     PROFILE MODAL
+========================= -->
+
+<div class="modal" id="modal">
+
+    <div class="profile">
+
+        <button
+            class="close"
+            id="close">
+            ×
+        </button>
+
+
+        <div
+            class="portrait"
+            id="portrait">
+
+            STUDENT PORTRAIT
+
+        </div>
+
+
+        <div class="profile-content">
+
+            <div
+                class="rank"
+                id="profile-rank">
+            </div>
+
+
+            <h2
+                id="profile-name">
+            </h2>
+
+
+            <div
+                class="profile-info"
+                id="profile-info">
+            </div>
+
+
+            <div
+                class="quote"
+                id="profile-quote">
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
 <script>
-const students=[
- {name:"Aster Vale",rank:"Astral Laureate",date:"August 2026",desc:"For outstanding dedication, careful observation, and exceptional participation throughout the observation sessions.",x:55,y:22,gold:true,s:6},
- {name:"Lysander Rowe",rank:"Distinguished Observer",date:"August 2026",desc:"For remarkable curiosity and consistent contribution during celestial observations.",x:27,y:29,s:4},
- {name:"Elian Voss",rank:"Notable Observer",date:"August 2026",desc:"For consistent attendance, thoughtful questions, and an enduring curiosity toward the night sky.",x:69,y:31,s:4},
- {name:"Mira Ash",rank:"Notable Observer",date:"July 2026",desc:"For an attentive eye and enthusiastic participation in practical observation.",x:38,y:58,s:4},
- {name:"Cael Arden",rank:"Distinguished Observer",date:"July 2026",desc:"For careful recording and a strong commitment to understanding the evidence behind the stars.",x:82,y:24,s:4}
+
+/* =====================================================
+   STUDENT DATA
+
+   Nanti bagian ini yang paling sering kamu edit.
+
+   Format:
+
+   name
+   month
+   rank
+   stellar type
+   temperature
+   quote
+   x
+   y
+
+===================================================== */
+
+const students = [
+
+    {
+        name: "Théodore Lysias",
+        month: "June",
+        rank: 1,
+        type: "A",
+        temperature: "7,500–10,000 K",
+        quote: "A star among the June constellation.",
+        x: 170,
+        y: 190
+    },
+
+    {
+        name: "Elara Vale",
+        month: "June",
+        rank: 2,
+        type: "G",
+        temperature: "5,200–6,000 K",
+        quote: "Quiet brilliance, steadily burning.",
+        x: 235,
+        y: 255
+    },
+
+    {
+        name: "Cassian Rowe",
+        month: "June",
+        rank: 3,
+        type: "K",
+        temperature: "3,700–5,200 K",
+        quote: "A warm light at the edge of the map.",
+        x: 285,
+        y: 215
+    },
+
+    {
+        name: "Luna Hart",
+        month: "June",
+        rank: 0,
+        type: "F",
+        temperature: "6,000–7,500 K",
+        quote: "A recorded star with room to rise.",
+        x: 330,
+        y: 275
+    },
+
+
+    /* JULY */
+
+    {
+        name: "Orion Blackwood",
+        month: "July",
+        rank: 1,
+        type: "B",
+        temperature: "10,000–30,000 K",
+        quote: "Bright enough to guide the way.",
+        x: 420,
+        y: 125
+    },
+
+    {
+        name: "Mira Sol",
+        month: "July",
+        rank: 2,
+        type: "G",
+        temperature: "5,200–6,000 K",
+        quote: "Steady as a familiar summer sky.",
+        x: 475,
+        y: 205
+    },
+
+    {
+        name: "Felix North",
+        month: "July",
+        rank: 3,
+        type: "M",
+        temperature: "2,400–3,700 K",
+        quote: "Small, red, and wonderfully persistent.",
+        x: 525,
+        y: 285
+    },
+
+
+    /* AUGUST */
+
+    {
+        name: "Iris Wren",
+        month: "August",
+        rank: 1,
+        type: "A",
+        temperature: "7,500–10,000 K",
+        quote: "A pale spark above the horizon.",
+        x: 665,
+        y: 145
+    },
+
+    {
+        name: "Adrian Frost",
+        month: "August",
+        rank: 2,
+        type: "F",
+        temperature: "6,000–7,500 K",
+        quote: "A quiet point of light.",
+        x: 730,
+        y: 225
+    },
+
+    {
+        name: "Nora Bell",
+        month: "August",
+        rank: 3,
+        type: "K",
+        temperature: "3,700–5,200 K",
+        quote: "Warm light, patient orbit.",
+        x: 770,
+        y: 300
+    },
+
+
+    /* SEPTEMBER */
+
+    {
+        name: "Sylvie Dawn",
+        month: "September",
+        rank: 1,
+        type: "O",
+        temperature: "30,000+ K",
+        quote: "The hottest star in this small sky.",
+        x: 790,
+        y: 390
+    },
+
+    {
+        name: "Rowan Ash",
+        month: "September",
+        rank: 2,
+        type: "A",
+        temperature: "7,500–10,000 K",
+        quote: "A clear point among the autumn stars.",
+        x: 705,
+        y: 425
+    },
+
+    {
+        name: "Theo Vale",
+        month: "September",
+        rank: 3,
+        type: "M",
+        temperature: "2,400–3,700 K",
+        quote: "A dim glow still worth finding.",
+        x: 620,
+        y: 470
+    },
+
+
+    /* OCTOBER */
+
+    {
+        name: "Amelia Reed",
+        month: "October",
+        rank: 1,
+        type: "G",
+        temperature: "5,200–6,000 K",
+        quote: "Golden and unmistakably bright.",
+        x: 485,
+        y: 490
+    },
+
+    {
+        name: "Julian West",
+        month: "October",
+        rank: 2,
+        type: "F",
+        temperature: "6,000–7,500 K",
+        quote: "A soft white light.",
+        x: 420,
+        y: 455
+    },
+
+    {
+        name: "Celia Moon",
+        month: "October",
+        rank: 3,
+        type: "K",
+        temperature: "3,700–5,200 K",
+        quote: "A warm ember in the archive.",
+        x: 350,
+        y: 485
+    },
+
+
+    /* NOVEMBER */
+
+    {
+        name: "Noah Finch",
+        month: "November",
+        rank: 1,
+        type: "B",
+        temperature: "10,000–30,000 K",
+        quote: "A blue-white spark closing the cycle.",
+        x: 215,
+        y: 415
+    },
+
+    {
+        name: "Maeve Quinn",
+        month: "November",
+        rank: 2,
+        type: "G",
+        temperature: "5,200–6,000 K",
+        quote: "One last golden light before winter.",
+        x: 260,
+        y: 365
+    },
+
+    {
+        name: "Arthur Grey",
+        month: "November",
+        rank: 3,
+        type: "M",
+        temperature: "2,400–3,700 K",
+        quote: "The quietest star of the season.",
+        x: 155,
+        y: 335
+    }
+
 ];
-const sky=document.getElementById("sky");
-students.forEach((st,i)=>{
- const el=document.createElement("div"); el.className="star "+(st.gold?"gold":"");
- el.style.left=st.x+"%";el.style.top=st.y+"%";el.style.width=st.s+"px";el.style.height=st.s+"px";
- el.title=st.name;el.onclick=()=>openPanel(st,el);sky.appendChild(el);
-});
-function openPanel(st,el){
- document.querySelectorAll(".star").forEach(x=>x.classList.remove("active"));el.classList.add("active");
- document.getElementById("rank").textContent=st.rank;document.getElementById("name").textContent=st.name;
- document.getElementById("date").textContent=st.date;document.getElementById("desc").textContent=st.desc;
- document.getElementById("panel").classList.add("show");
+
+
+/* =====================================================
+   STELLAR COLORS
+===================================================== */
+
+const stellarColors = {
+
+    O: "#a9caff",
+
+    B: "#b9dcff",
+
+    A: "#e9f2ff",
+
+    F: "#fff0c0",
+
+    G: "#ffe08b",
+
+    K: "#ffae6c",
+
+    M: "#ff7560"
+
+};
+
+
+/* =====================================================
+   DRAW CONSTELLATION
+===================================================== */
+
+const svg =
+    document.getElementById("constellation");
+
+
+function drawConstellation() {
+
+    svg.innerHTML = "";
+
+
+    /*
+       Group students by month.
+    */
+
+    const groups = {};
+
+
+    students.forEach((student, index) => {
+
+        if (!groups[student.month]) {
+
+            groups[student.month] = [];
+
+        }
+
+        groups[student.month].push(index);
+
+    });
+
+
+    /*
+       Draw constellation lines.
+    */
+
+    Object.values(groups).forEach(group => {
+
+        for (
+            let i = 0;
+            i < group.length - 1;
+            i++
+        ) {
+
+            const studentA =
+                students[group[i]];
+
+            const studentB =
+                students[group[i + 1]];
+
+
+            const line =
+                document.createElementNS(
+                    "http://www.w3.org/2000/svg",
+                    "line"
+                );
+
+
+            line.setAttribute(
+                "x1",
+                studentA.x
+            );
+
+            line.setAttribute(
+                "y1",
+                studentA.y
+            );
+
+            line.setAttribute(
+                "x2",
+                studentB.x
+            );
+
+            line.setAttribute(
+                "y2",
+                studentB.y
+            );
+
+
+            line.setAttribute(
+                "class",
+                "constellation-line"
+            );
+
+
+            svg.appendChild(line);
+
+        }
+
+    });
+
+
+    /*
+       Draw stars.
+    */
+
+    students.forEach(student => {
+
+        const group =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "g"
+            );
+
+
+        group.setAttribute(
+            "class",
+            "star"
+        );
+
+
+        group.style.color =
+            stellarColors[student.type];
+
+
+        group.setAttribute(
+            "transform",
+            `translate(${student.x}, ${student.y})`
+        );
+
+
+        /* Glow */
+
+        const glow =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "circle"
+            );
+
+
+        glow.setAttribute(
+            "r",
+            student.rank === 1 ? 17 :
+            student.rank === 2 ? 13 :
+            student.rank === 3 ? 11 :
+            8
+        );
+
+
+        glow.setAttribute(
+            "fill",
+            stellarColors[student.type]
+        );
+
+
+        glow.setAttribute(
+            "opacity",
+            student.rank ? "0.13" : "0.05"
+        );
+
+
+        /* Actual star */
+
+        const star =
+            document.createElementNS(
+                "http://www.w3.org/2000/svg",
+                "circle"
+            );
+
+
+        star.setAttribute(
+            "r",
+            student.rank === 1 ? 8 :
+            student.rank === 2 ? 6 :
+            student.rank === 3 ? 5 :
+            3.5
+        );
+
+
+        star.setAttribute(
+            "fill",
+            stellarColors[student.type]
+        );
+
+
+        star.setAttribute(
+            "stroke",
+            "rgba(255,255,255,0.7)"
+        );
+
+
+        star.setAttribute(
+            "stroke-width",
+            "1"
+        );
+
+
+        group.appendChild(glow);
+
+        group.appendChild(star);
+
+
+        /*
+           Clicking star opens profile.
+        */
+
+        group.addEventListener(
+            "click",
+            () => openProfile(student)
+        );
+
+
+        svg.appendChild(group);
+
+    });
+
 }
-function closePanel(){document.getElementById("panel").classList.remove("show");document.querySelectorAll(".star").forEach(x=>x.classList.remove("active"))}
+
+
+/* =====================================================
+   PROFILE
+===================================================== */
+
+const modal =
+    document.getElementById("modal");
+
+
+function openProfile(student) {
+
+    document.getElementById(
+        "profile-name"
+    ).textContent =
+        student.name;
+
+
+    document.getElementById(
+        "profile-rank"
+    ).textContent =
+        student.rank
+        ? `Rank #${String(student.rank).padStart(2, "0")} · ${student.month} 2026`
+        : `Recorded Star · ${student.month} 2026`;
+
+
+    document.getElementById(
+        "profile-info"
+    ).innerHTML =
+
+        `Stellar Type:
+        <strong style="color:${stellarColors[student.type]}">
+            ${student.type}
+        </strong>
+        <br>
+
+        Surface temperature:
+        ${student.temperature}
+        <br>
+
+        Celestial Cycle I`;
+
+
+    document.getElementById(
+        "profile-quote"
+    ).textContent =
+        `“${student.quote}”`;
+
+
+    modal.classList.add("active");
+
+}
+
+
+/* =====================================================
+   CLOSE PROFILE
+===================================================== */
+
+document
+    .getElementById("close")
+    .addEventListener(
+        "click",
+        () => modal.classList.remove("active")
+    );
+
+
+modal.addEventListener(
+    "click",
+    event => {
+
+        if (
+            event.target === modal
+        ) {
+
+            modal.classList.remove("active");
+
+        }
+
+    }
+);
+
+
+/* =====================================================
+   INITIALIZE
+===================================================== */
+
+drawConstellation();
+
 </script>
-</body></html>
+
+</body>
+</html>
