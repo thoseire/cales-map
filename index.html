@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Celestial Map — Prototype</title>
+<style>
+:root{--bg:#070d1d;--panel:#0c1530;--gold:#d7b76a;--text:#eef2ff;--muted:#9ca9c9;--line:#29385f}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 50% 35%,#17274d 0,#0a1229 42%,#040812 100%);color:var(--text);font-family:Georgia,serif;min-height:100vh;overflow:hidden}
+header{position:absolute;z-index:5;top:24px;left:0;right:0;text-align:center;pointer-events:none}
+.kicker{font:11px Arial,sans-serif;letter-spacing:4px;color:var(--gold);text-transform:uppercase}.title{font-size:31px;letter-spacing:2px;margin:5px 0}.sub{font:12px Arial,sans-serif;color:var(--muted);letter-spacing:1px}
+#sky{position:absolute;inset:0}
+.star{position:absolute;border-radius:50%;background:#fff;box-shadow:0 0 8px 2px rgba(210,225,255,.65);cursor:pointer;transition:.25s;z-index:2}
+.star:hover,.star.active{transform:scale(2.2);box-shadow:0 0 18px 5px rgba(215,183,106,.7)}
+.star.gold{background:#e9cf88;box-shadow:0 0 10px 3px rgba(215,183,106,.7)}
+.constellation{position:absolute;inset:0;pointer-events:none;opacity:.28}
+.constellation svg{width:100%;height:100%}.constellation line{stroke:#6f83b5;stroke-width:.8}
+.panel{position:absolute;z-index:10;right:28px;bottom:28px;width:300px;padding:22px;background:rgba(7,13,29,.9);border:1px solid #35456f;border-radius:12px;box-shadow:0 18px 60px #0008;backdrop-filter:blur(10px);display:none}
+.panel.show{display:block}.rank{font:10px Arial,sans-serif;letter-spacing:2px;color:var(--gold);text-transform:uppercase}.name{font-size:25px;margin:7px 0}.date{font:11px Arial,sans-serif;color:var(--muted)}.desc{font:13px/1.6 Arial,sans-serif;color:#d6def4;margin:15px 0}.close{position:absolute;right:14px;top:10px;color:var(--muted);cursor:pointer;font:18px Arial}
+.legend{position:absolute;z-index:5;left:28px;bottom:28px;font:10px Arial,sans-serif;color:var(--muted);letter-spacing:1px;line-height:2}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 7px #fff;margin-right:7px}.dot.g{background:var(--gold);box-shadow:0 0 7px var(--gold)}
+.instruction{position:absolute;z-index:5;bottom:29px;left:50%;transform:translateX(-50%);font:10px Arial,sans-serif;color:#7482a5;letter-spacing:1px}
+@media(max-width:600px){.title{font-size:23px}.panel{left:18px;right:18px;bottom:18px;width:auto}.legend{left:18px;bottom:18px}.instruction{display:none}}
+</style>
+</head>
+<body>
+<header><div class="kicker">Celestial Registry</div><div class="title">THE CELESTIAL MAP</div><div class="sub">Every observer leaves a light behind · 2026.2</div></header>
+<div id="sky"></div>
+<div class="constellation"><svg viewBox="0 0 100 100" preserveAspectRatio="none">
+<line x1="13" y1="37" x2="27" y2="29"/><line x1="27" y1="29" x2="42" y2="35"/><line x1="42" y1="35" x2="55" y2="22"/>
+<line x1="55" y1="22" x2="69" y2="31"/><line x1="69" y1="31" x2="82" y2="24"/>
+<line x1="22" y1="67" x2="38" y2="58"/><line x1="38" y1="58" x2="51" y2="70"/><line x1="51" y1="70" x2="68" y2="61"/>
+</svg></div>
+<div class="legend"><span class="dot g"></span> Astral Laureate<br><span class="dot"></span> Distinguished / Notable Observer</div>
+<div class="instruction">CLICK A STAR TO VIEW ITS RECORD</div>
+<div id="panel" class="panel"><span class="close" onclick="closePanel()">×</span><div id="rank" class="rank"></div><div id="name" class="name"></div><div id="date" class="date"></div><div id="desc" class="desc"></div></div>
+<script>
+const students=[
+ {name:"Aster Vale",rank:"Astral Laureate",date:"August 2026",desc:"For outstanding dedication, careful observation, and exceptional participation throughout the observation sessions.",x:55,y:22,gold:true,s:6},
+ {name:"Lysander Rowe",rank:"Distinguished Observer",date:"August 2026",desc:"For remarkable curiosity and consistent contribution during celestial observations.",x:27,y:29,s:4},
+ {name:"Elian Voss",rank:"Notable Observer",date:"August 2026",desc:"For consistent attendance, thoughtful questions, and an enduring curiosity toward the night sky.",x:69,y:31,s:4},
+ {name:"Mira Ash",rank:"Notable Observer",date:"July 2026",desc:"For an attentive eye and enthusiastic participation in practical observation.",x:38,y:58,s:4},
+ {name:"Cael Arden",rank:"Distinguished Observer",date:"July 2026",desc:"For careful recording and a strong commitment to understanding the evidence behind the stars.",x:82,y:24,s:4}
+];
+const sky=document.getElementById("sky");
+students.forEach((st,i)=>{
+ const el=document.createElement("div"); el.className="star "+(st.gold?"gold":"");
+ el.style.left=st.x+"%";el.style.top=st.y+"%";el.style.width=st.s+"px";el.style.height=st.s+"px";
+ el.title=st.name;el.onclick=()=>openPanel(st,el);sky.appendChild(el);
+});
+function openPanel(st,el){
+ document.querySelectorAll(".star").forEach(x=>x.classList.remove("active"));el.classList.add("active");
+ document.getElementById("rank").textContent=st.rank;document.getElementById("name").textContent=st.name;
+ document.getElementById("date").textContent=st.date;document.getElementById("desc").textContent=st.desc;
+ document.getElementById("panel").classList.add("show");
+}
+function closePanel(){document.getElementById("panel").classList.remove("show");document.querySelectorAll(".star").forEach(x=>x.classList.remove("active"))}
+</script>
+</body></html>
